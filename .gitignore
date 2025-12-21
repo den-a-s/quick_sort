@@ -1,0 +1,176 @@
+# ================================
+# Build directories
+# ================================
+build/
+bin/
+out/
+Debug/
+Release/
+x64/
+x86/
+*.build/
+cmake-build-*/
+CMakeFiles/
+
+# ================================
+# Compiled Object files
+# ================================
+*.o
+*.ko
+*.obj
+*.elf
+
+# ================================
+# Precompiled Headers
+# ================================
+*.gch
+*.pch
+
+# ================================
+# Libraries
+# ================================
+*.a
+*.lib
+*.dll
+*.dylib
+*.so
+*.so.*
+
+# ================================
+# Executables
+# ================================
+*.exe
+*.out
+*.app
+*.dSYM/
+
+# ================================
+# CMake
+# ================================
+CMakeCache.txt
+CMakeUserPresets.json
+cmake_install.cmake
+install_manifest.txt
+compile_commands.json
+CTestTestfile.cmake
+_deps/
+*.cmake
+
+# ================================
+# Testing
+# ================================
+*.gcda
+*.gcno
+*.gcov
+coverage/
+coverage.info
+coverage/
+htmlcov/
+*.cover
+*.profdata
+
+# ================================
+# IDE and Editor files
+# ================================
+# VS Code
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+!.vscode/c_cpp_properties.json
+
+# CLion
+.idea/
+*.iml
+
+# Visual Studio
+*.vcxproj
+*.vcxproj.filters
+*.vcxproj.user
+*.sln
+*.suo
+*.opensdf
+*.sdf
+*.db
+
+# Xcode
+*.xcodeproj/
+*.xcworkspace/
+xcuserdata/
+DerivedData/
+
+# Eclipse
+.settings/
+.project
+.classpath
+.cproject
+
+# ================================
+# Dependency directories
+# ================================
+deps/
+third_party/
+external/
+vendor/
+googletest/
+
+# ================================
+# Documentation
+# ================================
+docs/_build/
+docs/html/
+docs/latex/
+*.aux
+*.log
+*.toc
+*.out
+
+# ================================
+# Package management
+# ================================
+conaninfo.txt
+conanbuildinfo.*
+conanfile.pyc
+.pytest_cache/
+
+# ================================
+# OS generated files
+# ================================
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+*.swp
+*~
+*.orig
+
+# ================================
+# Logs and databases
+# ================================
+*.log
+*.sql
+*.sqlite
+*.db
+
+# ================================
+# Temporary files
+# ================================
+tmp/
+temp/
+*.tmp
+*.temp
+
+# ================================
+# Project specific files
+# ================================
+# Example: valgrind output
+valgrind-*.log
+callgrind.out.*
+
+# Example: profiling data
+perf.data
+perf.data.old
