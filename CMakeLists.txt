@@ -10,6 +10,8 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 option(BUILD_TESTS "Build tests" ON)
 option(BUILD_EXAMPLES "Build examples" ON)
 
+set(DATA_FILE_PATH ${CMAKE_SOURCE_DIR}/experiment.csv)
+
 # Включаем проверки в отладочном режиме
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
     add_definitions(-D_DEBUG)
@@ -17,6 +19,10 @@ endif()
 
 add_executable(QuickSortMain main.cpp)
 target_link_directories(QuickSortMain PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
+
+target_compile_definitions(QuickSortMain PRIVATE 
+    DATA_FILE_PATH="${DATA_FILE_PATH}"
+)
 
 # Тесты
 if(BUILD_TESTS)

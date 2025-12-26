@@ -7,100 +7,98 @@
 #include <iostream>
 
 template <typename RandomIt, typename Compare>
-static RandomIt get_pivot(RandomIt left, RandomIt right, Compare comp)
+typename std::iterator_traits<RandomIt>::value_type
+median_of_three(RandomIt left, RandomIt right, Compare comp)
 {
-    using value_type = typename std::iterator_traits<RandomIt>::value_type;
-    // Вычисляем середину
-    RandomIt middle = left + (right - left) / 2;
+    RandomIt i = left;
+    RandomIt mid = left + (right - left) / 2;
+    RandomIt j = right - 1;
 
-    // Медиана из трех: left, middle, right-1
-    if (comp(*middle, *left))
-    {
-        std::iter_swap(left, middle);
-    }
-    if (comp(*(right - 1), *left))
-    {
-        std::iter_swap(left, right - 1);
-    }
-    if (comp(*(right - 1), *middle))
-    {
-        std::iter_swap(middle, right - 1);
-    }
+    if (comp(*mid, *i))
+        std::iter_swap(i, mid);
+    if (comp(*j, *mid))
+        std::iter_swap(mid, j);
+    if (comp(*mid, *i))
+        std::iter_swap(i, mid);
 
-    return middle;
+    return *mid;
 }
 
 template <typename RandomIt, typename Compare>
-static void insertion_sort(RandomIt left, RandomIt right, Compare comp)
+void insertion_sort(RandomIt left, RandomIt right, Compare comp)
 {
     using value_type = typename std::iterator_traits<RandomIt>::value_type;
+
     for (RandomIt i = left + 1; i < right; ++i)
     {
         value_type key = std::move(*i);
-        RandomIt j = i - 1;
-
-        while (j >= left && comp(key, *j))
+        RandomIt j = i;
+        while (j > left && comp(key, *(j - 1)))
         {
-            std::iter_swap(j, j + 1);
+            *j = std::move(*(j - 1));
             --j;
         }
-        *(j + 1) = std::move(key);
+        *j = std::move(key);
     }
 }
 
-template <typename RandomIt, typename Compare>
-void optimized_quicksort(RandomIt left, RandomIt right, Compare comp, size_t threshold)
+template <typename RandomIt, typename Compare, int Threshold = 16>
+void quicksort_threshold(RandomIt left, RandomIt right, Compare comp)
 {
     static_assert(
         std::is_same<
             typename std::iterator_traits<RandomIt>::iterator_category,
             std::random_access_iterator_tag>::value,
-        "optimized_quicksort requires random access iterators");
+        "quick_sort requires random access iterators");
 
-    // Базовый случай - 0 или 1 элемент
-    if (left >= right || std::next(left) == right)
-        return;
-
-    using difference_type = typename std::iterator_traits<RandomIt>::difference_type;
     using value_type = typename std::iterator_traits<RandomIt>::value_type;
 
-    while (right - left > static_cast<difference_type>(threshold))
-    {
-        // Опорный элемент - медиана
-        RandomIt middle = get_pivot(left, right, comp);
-        value_type pivot = *middle;
-        std::iter_swap(middle, right - 2);
+    if (left >= right)
+        return;
 
-        // Разбиение Ломуто
+    while (right - left > Threshold)
+    {
+        value_type pivot = median_of_three(left, right, comp);
+
         RandomIt i = left;
-        for (RandomIt j = left; j < right - 2; ++j)
+        RandomIt j = right - 1;
+        while (true)
         {
-            if (comp(*j, pivot))
+            while (comp(*i, pivot))
             {
-                std::iter_swap(i, j);
                 ++i;
             }
+            while (comp(pivot, *j))
+            {
+                --j;
+            }
+            if (i >= j)
+            {
+                break;
+            }
+            std::iter_swap(i, j);
+            ++i;
+            --j;
         }
-        std::iter_swap(i, right - 2);
 
-        // Исключение хвостовой рекурсии: сортируем меньший интервал рекурсивно
-        difference_type left_size = i - left;
-        difference_type right_size = (right - i) - 1;
+        RandomIt mid = j + 1;
 
-        if (left_size < right_size)
+        if (mid - left < right - mid)
         {
-            optimized_quicksort(left, i, comp, threshold);
-            left = i + 1;
+            quicksort_threshold(left, mid, comp);
+            left = mid;
         }
         else
         {
-            optimized_quicksort(i + 1, right, comp, threshold);
-            right = i;
+            quicksort_threshold(mid, right, comp);
+            right = mid;
         }
     }
 
-    // Сортировка вставками для коротких интервалов
-    insertion_sort(left, right, comp);
+    if (right - left > 1)
+    {
+        insertion_sort(left, right, comp);
+    }
 }
 
 template <typename RandomIt, typename Compare>
@@ -113,49 +111,44 @@ void quicksort(RandomIt left, RandomIt right, Compare comp)
             std::random_access_iterator_tag>::value,
         "quick_sort requires random access iterators");
 
-    using difference_type = typename std::iterator_traits<RandomIt>::difference_type;
+    using value_type = typename std::iterator_traits<RandomIt>::value_type;
 
-    // Базовый случай - 0 или 1 элемент
-    if (left >= right || std::next(left) == right)
+    if (left >= right)
         return;
 
-    RandomIt i = left;
-    RandomIt j = std::prev(right); // Указатель на последний элемент
-    RandomIt pivot_it = left + (std::distance(left, right) / 2);
-    auto pivot = *pivot_it;
+    value_type pivot = median_of_three(left, right, comp);
 
-    // Разделение массива (Хоара)
-    while (i <= j)
+    RandomIt i = left;
+    RandomIt j = right - 1;
+    while (true)
     {
-        // Ищем элемент слева, который должен быть справа от pivot
         while (comp(*i, pivot))
         {
             ++i;
         }
-
-        // Ищем элемент справа, который должен быть слева от pivot
         while (comp(pivot, *j))
         {
             --j;
         }
-
-        // Меняем местами, если индексы не пересеклись
-        if (i <= j)
+        if (i >= j)
         {
-            std::iter_swap(i, j);
-            ++i;
-            if (j != left)
-                --j; // Избегаем выхода за границы
+            break;
         }
+        std::iter_swap(i, j);
+        ++i;
+        --j;
     }
 
-    // Рекурсивно сортируем левую и правую части
-    if (left < j)
+    RandomIt mid = j + 1;
+
+    if (mid - left < right - mid)
     {
-        quicksort(left, std::next(j), comp); // std::next(j) т.к. правая граница - exclusive
+        quicksort(left, mid, comp);
+        left = mid;
     }
-    if (i < right)
+    else
     {
-        quicksort(i, right, comp);
+        quicksort(mid, right, comp);
+        right = mid;
     }
 }

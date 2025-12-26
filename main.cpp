@@ -8,9 +8,10 @@
 #include <iterator>
 #include <concepts>
 #include <fstream>
+#include <functional>
 
 #include "include/quick_sort.hpp"
-// Генерация тестовых данных
+
 enum class DataType
 {
     RANDOM,
@@ -43,77 +44,32 @@ std::vector<int> generate_data(size_t size, DataType type, int seed = 42)
     return data;
 }
 
-// Основная функция эксперимента
-template <typename Container, typename Compare>
-void run_sorting_experiment(
-    Container const &data, // Массив для сортировки (по ссылке)
+template <typename Container, typename Compare, typename Sort>
+void mesure_sorting(
+    Container data,
     Compare comp,
-    std::ofstream &outfile // Файл для записи результатов
-)
+    Sort sort,
+    std::string const &name,
+    std::ofstream &outfile)
 {
-    using T = typename Container::value_type;
-
     size_t size = data.size();
 
-    // Делаем копию данных для сортировки
-    Container data_copy = data;
-
-    // Замеряем время сортировки
     auto start = std::chrono::high_resolution_clock::now();
-    quicksort(data_copy.begin(), data_copy.end(), comp);
+    sort(data.begin(), data.end(), comp);
     auto end = std::chrono::high_resolution_clock::now();
 
     auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
     long long time_us = duration.count();
 
-    // Проверяем корректность сортировки
-    bool sorted_correctly = std::is_sorted(data_copy.begin(), data_copy.end());
+    bool sorted_correctly = std::is_sorted(data.begin(), data.end(), comp);
 
-    // Записываем результаты в файл
-    outfile << "Size: " << size
-            << " | Time: " << time_us << " µs"
-            << " | Sorted: " << (sorted_correctly ? "YES" : "NO")
-            << std::endl;
-}
-
-// Основная функция эксперимента
-template <typename Container, typename Compare>
-void run_sorting_experiment_with_treshold(
-    Container const &data, // Массив для сортировки (по ссылке)
-    Compare comp,
-    int treshold,
-    std::ofstream &outfile // Файл для записи результатов
-)
-{
-    using T = typename Container::value_type;
-
-    size_t size = data.size();
-
-    // Делаем копию данных для сортировки
-    Container data_copy = data;
-
-    // Замеряем время сортировки
-    auto start = std::chrono::high_resolution_clock::now();
-    optimized_quicksort(data_copy.begin(), data_copy.end(), comp, treshold);
-    auto end = std::chrono::high_resolution_clock::now();
-
-    auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
-    long long time_us = duration.count();
-
-    // Проверяем корректность сортировки
-    bool sorted_correctly = std::is_sorted(data_copy.begin(), data_copy.end());
-
-    // Записываем результаты в файл
-    outfile << "Size: " << size
-            << " | Time: " << time_us << " µs"
-            << " | Sorted: " << (sorted_correctly ? "YES" : "NO")
-            << " | Treshold " << treshold
-            << std::endl;
+    outfile << name << "," << size << "," << time_us << ","
+            << (sorted_correctly ? "YES" : "NO") << std::endl;
 }
 
 int main()
 {
-    std::string filename = "experiment.txt";
+    std::string filename = DATA_FILE_PATH;
     std::ofstream file(filename, std::ios::out);
     if (!file)
     {
@@ -121,11 +77,14 @@ int main()
         return 0;
     }
 
-    auto data = generate_data(1000000, DataType::REVERSED);
-    run_sorting_experiment(data, std::less<int>(), file);
-    for (int curr_treshold = 4; curr_treshold < 30; curr_treshold++)
+    file << "Algorithm,Size,Time (µs),Sorted" << std::endl;
+
+    for (int cnt_elem = 4; cnt_elem < 100; cnt_elem++)
     {
-        run_sorting_experiment_with_treshold(data, std::less<int>(), curr_treshold, file);
+        auto data = generate_data(cnt_elem, DataType::REVERSED);
+        mesure_sorting(data, std::less<int>(), insertion_sort<std::vector<int>::iterator, std::less<int>>, "insertion_sort", file);
+        mesure_sorting(data, std::less<int>(), quicksort<std::vector<int>::iterator, std::less<int>>, "quicksort", file);
+        mesure_sorting(data, std::less<int>(), quicksort_threshold<std::vector<int>::iterator, std::less<int>>, "quicksort_threshold", file);
     }
 
     file.close();
