@@ -84,7 +84,7 @@ int main()
         auto data = generate_data(cnt_elem, DataType::REVERSED);
         mesure_sorting(data, std::less<int>(), insertion_sort<std::vector<int>::iterator, std::less<int>>, "insertion_sort", file);
         mesure_sorting(data, std::less<int>(), quicksort<std::vector<int>::iterator, std::less<int>>, "quicksort", file);
-        mesure_sorting(data, std::less<int>(), quicksort_threshold<std::vector<int>::iterator, std::less<int>>, "quicksort_threshold", file);
+        mesure_sorting(data, std::less<int>(), itmo_sort<std::vector<int>::iterator, std::less<int>>, "quicksort_threshold", file);
     }
 
     file.close();
